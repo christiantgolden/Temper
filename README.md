@@ -1,7 +1,7 @@
 # Temper
 A meditative experience on the persuit of temperance, balance, equilibrium. Temper (in both its Temper.py and GoldenRatio.py forms) is being developed in the Python programming language, using the PyGame library.
 
-If you plan to run either of the .py files, you must have downloaded the SourceCodPro-Regular.ttf font, and installed Python 3.x and PyGame. 
+If you plan to run either of the .py files, you must have downloaded the <a href="https://fonts.google.com/specimen/Source+Code+Pro">SourceCodPro-Regular.ttf</a> font, and installed <a href="https://www.python.org/">Python 3.x</a> and <a href="https://www.pygame.org/news">PyGame</a>. 
 
 <pre>
 Do not be overly righteous,
