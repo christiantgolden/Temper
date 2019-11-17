@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Temper</title>
+    <style>* { padding: 0; margin: 0; } canvas { background: #000; display: block; margin: 0 auto; }</style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    
+    var x = canvas.width/2;
+    var y = canvas.height-30;
+    var paddleHeight = 20;
+    var paddleWidth = 20;
+    var paddleX = (canvas.width-paddleWidth)/2;
+    var paddleY = canvas.height - paddleHeight;
+    var rightPressed = false;
+    var leftPressed = false;
+    var downPressed = false;
+    var upPressed = false;
+
+    var score = 0;
+    var lives = 3;
+    var bricks = [];
+    var blockWidth = 20;
+    var blockHeight = 20;
+
+    var block = {
+	x: Math.floor((Math.random() * canvas.width) + 1),
+	y: Math.floor((Math.random() * -screen.height * 3) + 1),
+        size: 20
+    };
+
+    var blockList = [];
+
+    for(var i=0; i<30; i++){
+	blockList[i] = {
+	    x: Math.floor((Math.random() * canvas.width) + 1),
+ 	    y: Math.floor((Math.random() * -canvas.height) + 1),
+	    size: 20
+	};
+    }
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+
+    function keyDownHandler(e) {
+        if(e.keyCode == 39 || e.keyCode == 68) {
+            rightPressed = true;
+        }
+        else if(e.keyCode == 37 || e.keyCode == 65) {
+            leftPressed = true;
+        }
+        else if(e.keyCode == 38 || e.keyCode == 87) {
+            upPressed = true;
+        }
+        else if(e.keyCode == 40 || e.keyCode == 83) {
+            downPressed = true;
+        }
+    }
+    function keyUpHandler(e) {
+        if(e.keyCode == 39 || e.keyCode == 68) {
+            rightPressed = false;
+        }
+        else if(e.keyCode == 37 || e.keyCode == 65) {
+            leftPressed = false;
+        }
+        else if(e.keyCode == 38 || e.keyCode == 87) {
+            upPressed = false;
+        }
+        else if(e.keyCode == 40 || e.keyCode == 83) {
+            downPressed = false;
+        }
+    }
+    function mouseMoveHandler(e) {
+        var relativeX = e.clientX - canvas.offsetLeft;
+        var relativeY = e.clientY;
+        if(relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddleWidth/2;
+        }
+        if(relativeY > 0 && relativeY < canvas.height) {
+            paddleY = relativeY - paddleHeight/2;
+        }
+    }
+    function collisionDetection() {
+	toBeRemoved = []
+        for(var c=0; c<blockList.length; c++) {
+            if(blockList[c].x + blockList[c].size >= paddleX && blockList[c].x <= paddleX + paddleWidth){
+		if(blockList[c].y + blockList[c].size >= paddleY && blockList[c].y < paddleY+paddleHeight){
+		    console.log("Collision Detected");
+		    paddleHeight += 5;
+		    paddleWidth += 5;
+		    toBeRemoved.push(c);
+		    //blockList.splice(c,1);
+		    //break;
+		    blockList[c].y = Math.floor((Math.random() * -canvas.height) + 1);
+		}
+	    }
+        }
+    }
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, paddleY, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawScore() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#0095DD";
+        ctx.fillText("Score: "+score, 8, 20);
+    }
+    function drawLives() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#0095DD";
+        ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+    }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPaddle();
+        drawScore();
+        drawLives();
+        for(var i=0; i<blockList.length; i++){
+	    //console.log(i);
+	    ctx.beginPath();
+	    if(blockList[i].y < canvas.height + blockList[i].size){
+        	blockList[i].y += 2;
+	    }
+	    else {
+		blockList[i].y = Math.floor((Math.random() * -canvas.height) + 1);
+	    }
+	    ctx.rect(blockList[i].x,blockList[i].y,blockList[i].size,blockList[i].size);
+	    ctx.fillStyle = "#0095DD";
+            ctx.fill();
+    	    ctx.closePath();
+	}
+        if(rightPressed && paddleX < canvas.width-paddleWidth) {
+            paddleX += 7;
+        }
+        else if(leftPressed && paddleX > 0) {
+            paddleX -= 7;
+        }
+        if(downPressed && paddleY + paddleHeight < canvas.height) {
+            paddleY += 5;
+        }
+        else if(upPressed && paddleY > 0) {
+            paddleY -= 5;
+        }
+        paddleHeight -= .2;
+	paddleWidth -= .2;
+	collisionDetection();
+	if(paddleHeight <= 0 || paddleWidth <= 0){
+	    console.log("You Imploded");
+	}
+	else if(paddleHeight > canvas.Height || paddleWidth > canvas.width){
+	    console.log("You Exploded");
+	}
+	else{
+            requestAnimationFrame(draw);
+	}
+    }
+    //generateBlocks();
+    draw();
+</script>
+
+</body>
+</html>
