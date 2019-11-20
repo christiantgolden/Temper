@@ -12,44 +12,42 @@
 <script>
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
-    
+    var backRGB = {
+	r: 0,
+	g: 0,
+	b: 0
+    };
+    var heroRGBA = {
+	r: 128,
+	g: 0,
+	b: 128,
+	a: 1
+    };
+    var quit = false;
+    var blockSpeed = 2;
     var x = canvas.width/2;
     var y = canvas.height-30;
-    var paddleHeight = 20;
-    var paddleWidth = 20;
-    var paddleX = (canvas.width-paddleWidth)/2;
-    var paddleY = canvas.height - paddleHeight;
+    var heroHeight = 20 * 1.6;
+    var heroWidth = 20 * 1.6;
+    var heroX = (canvas.width-heroWidth)/2;
+    var heroY = canvas.height - heroHeight;
     var rightPressed = false;
     var leftPressed = false;
     var downPressed = false;
     var upPressed = false;
-
     var score = 0;
     var lives = 3;
-    var bricks = [];
-    var blockWidth = 20;
-    var blockHeight = 20;
-
-    var block = {
-	x: Math.floor((Math.random() * canvas.width) + 1),
-	y: Math.floor((Math.random() * -screen.height * 3) + 1),
-        size: 20
-    };
-
     var blockList = [];
-
-    for(var i=0; i<30; i++){
+    for(var i=0; i<20; i++){
 	blockList[i] = {
 	    x: Math.floor((Math.random() * canvas.width) + 1),
  	    y: Math.floor((Math.random() * -canvas.height) + 1),
 	    size: 20
 	};
     }
-
     document.addEventListener("keydown", keyDownHandler, false);
     document.addEventListener("keyup", keyUpHandler, false);
     document.addEventListener("mousemove", mouseMoveHandler, false);
-
     function keyDownHandler(e) {
         if(e.keyCode == 39 || e.keyCode == 68) {
             rightPressed = true;
@@ -82,92 +80,108 @@
         var relativeX = e.clientX - canvas.offsetLeft;
         var relativeY = e.clientY;
         if(relativeX > 0 && relativeX < canvas.width) {
-            paddleX = relativeX - paddleWidth/2;
+            heroX = relativeX - heroWidth/2;
         }
         if(relativeY > 0 && relativeY < canvas.height) {
-            paddleY = relativeY - paddleHeight/2;
+           heroY = relativeY - heroHeight/2;
         }
     }
     function collisionDetection() {
-	toBeRemoved = []
         for(var c=0; c<blockList.length; c++) {
-            if(blockList[c].x + blockList[c].size >= paddleX && blockList[c].x <= paddleX + paddleWidth){
-		if(blockList[c].y + blockList[c].size >= paddleY && blockList[c].y < paddleY+paddleHeight){
+            if(blockList[c].x + blockList[c].size >= heroX && blockList[c].x <= heroX + heroWidth){
+		if(blockList[c].y + blockList[c].size >= heroY && blockList[c].y < heroY+heroHeight){
 		    console.log("Collision Detected");
-		    paddleHeight += 5;
-		    paddleWidth += 5;
-		    toBeRemoved.push(c);
-		    //blockList.splice(c,1);
-		    //break;
-		    blockList[c].y = Math.floor((Math.random() * -canvas.height) + 1);
+		    heroHeight += 5;
+		    heroWidth += 5;
+		    blockList[c].y = Math.floor((Math.random() * -canvas.height) - 1);
+		    blockList[c].x = Math.floor((Math.random() * canvas.width) + 1);
 		}
 	    }
         }
     }
-    function drawPaddle() {
+    function drawBackground(){
+	ctx.fillStyle = 'rgb(' + backRGB.r.toString() + ',' +
+				 backRGB.g.toString() + ',' +
+				 backRGB.b.toString() + ')';
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+    }
+    function drawhero() {
         ctx.beginPath();
-        ctx.rect(paddleX, paddleY, paddleWidth, paddleHeight);
-        ctx.fillStyle = "#0095DD";
+        ctx.rect(heroX, heroY, heroWidth, heroHeight);
+        ctx.fillStyle = 'rgba(' + heroRGBA.r.toString() + ',' +
+				  heroRGBA.g.toString() + ',' +
+				  heroRGBA.b.toString() + ',' +
+				  heroRGBA.a.toString() + ')';
         ctx.fill();
         ctx.closePath();
     }
-
-    function drawScore() {
-        ctx.font = "16px Arial";
-        ctx.fillStyle = "#0095DD";
-        ctx.fillText("Score: "+score, 8, 20);
-    }
-    function drawLives() {
-        ctx.font = "16px Arial";
-        ctx.fillStyle = "#0095DD";
-        ctx.fillText("Lives: "+lives, canvas.width-65, 20);
-    }
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawPaddle();
-        drawScore();
-        drawLives();
+	drawBackground();
+	heroRGBA.b = heroWidth * 5;
+	heroRGBA.r = 275 - heroRGBA.b;
+	backRGB.r = heroRGBA.a * 255;
+	backRGB.g = heroRGBA.a * 255;
+	backRGB.b = heroRGBA.a * 255;
+        drawhero();
+
         for(var i=0; i<blockList.length; i++){
-	    //console.log(i);
 	    ctx.beginPath();
-	    if(blockList[i].y < canvas.height + blockList[i].size){
-        	blockList[i].y += 2;
-	    }
-	    else {
-		blockList[i].y = Math.floor((Math.random() * -canvas.height) + 1);
-	    }
-	    ctx.rect(blockList[i].x,blockList[i].y,blockList[i].size,blockList[i].size);
-	    ctx.fillStyle = "#0095DD";
+            ctx.rect(blockList[i].x,blockList[i].y,blockList[i].size,blockList[i].size);
+	    ctx.fillStyle = "#0ff";
             ctx.fill();
     	    ctx.closePath();
+
+	    if(blockList[i].y < canvas.height + blockList[i].size){
+        	blockList[i].y += blockSpeed;
+	    }
+	    else {
+		blockList[i].y = Math.floor((Math.random() * -canvas.height) - 1);
+	 	blockList[i].x = Math.floor((Math.random() * canvas.width) + 1);
+	    }
 	}
-        if(rightPressed && paddleX < canvas.width-paddleWidth) {
-            paddleX += 7;
+        if(rightPressed && heroX < canvas.width-heroWidth) {
+            heroX += 7;
         }
-        else if(leftPressed && paddleX > 0) {
-            paddleX -= 7;
+        else if(leftPressed && heroX > 0) {
+            heroX -= 7;
         }
-        if(downPressed && paddleY + paddleHeight < canvas.height) {
-            paddleY += 5;
+        if(downPressed && heroY + heroHeight < canvas.height) {
+            heroY += 5;
         }
-        else if(upPressed && paddleY > 0) {
-            paddleY -= 5;
+        else if(upPressed && heroY > 0) {
+            heroY -= 5;
         }
-        paddleHeight -= .2;
-	paddleWidth -= .2;
+        heroHeight -= .33;
+	heroWidth -= .33;
+	heroRGBA.a = ((canvas.width/2)-heroWidth)*.005;
+	blockSpeed = heroWidth/10;
 	collisionDetection();
-	if(paddleHeight <= 0 || paddleWidth <= 0){
+	if(heroHeight <= 0 || heroWidth <= 0){
 	    console.log("You Imploded");
+	    quit = true;
+	    ctx.font = "30px Lucida Console";
+	    ctx.fillStyle = "white";
+	    ctx.textAlign = "center";
+	    ctx.strokeText("You Imploded",canvas.width/2,canvas.height/2);
+	    ctx.fillText("You Imploded",canvas.width/2,canvas.height/2);
 	}
-	else if(paddleHeight > canvas.Height || paddleWidth > canvas.width){
+	else if(heroRGBA.a <= 0){
 	    console.log("You Exploded");
+	    ctx.font = "30px Lucida Console";
+	    ctx.fillStyle = "white";
+	    ctx.textAlign = "center";
+	    ctx.strokeText("You Exploded",canvas.width/2,canvas.height/2);
+	    ctx.fillText("You Exploded",canvas.width/2,canvas.height/2);
+	    quit = true;
 	}
 	else{
             requestAnimationFrame(draw);
 	}
     }
-    //generateBlocks();
-    draw();
+    if(quit == false){
+        draw();
+    }
 </script>
 
 </body>
